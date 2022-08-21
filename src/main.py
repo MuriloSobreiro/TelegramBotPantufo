@@ -3,9 +3,11 @@ import re
 import telebot
 from dotenv import load_dotenv
 
+from keepAlive import keep_alive
 import termooo
 import rpg
 
+keep_alive()
 load_dotenv()
 bot = telebot.TeleBot(os.environ["BOT_AUTH"])
 
