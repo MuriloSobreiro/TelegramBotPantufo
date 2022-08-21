@@ -10,13 +10,14 @@ SQLModel.metadata.create_all(engine)
 
 trad = {"term.ooo/2": 8,"term.ooo/4": 10}
 
-def registrar(texto, jogador):
+def registrar(texto, jogador, idjogador):
     info = processaTermo(texto)
     info["jogador"] = jogador
+    info["idJogador"] = idjogador
     res = salvarNoBanco(info)
     return res
 
-def resultado(dia):
+def resultado():
     return "Não dados"
 
 
@@ -26,7 +27,7 @@ def processaTermo(texto):
     jogo = res[0]
     id = res[1][1:]
     if res[0] == "term.ooo":
-        pontos = [res[2][0]]
+        pontos = [int(res[2].replace('*',"")[0])]
     else:
         a = texto.split("\n")
         pontos = a[2]+a[3]
@@ -38,7 +39,7 @@ def processaTermo(texto):
 
 def salvarNoBanco(info: dict):
     r = Termooo(**info)
-    comando = select(Termooo).where(Termooo.jogador == r.jogador).where(Termooo.numero == r.numero).where(Termooo.jogo == r.jogo)
+    comando = select(Termooo).where(Termooo.idJogador == r.idJogador).where(Termooo.numero == r.numero).where(Termooo.jogo == r.jogo)
     matches = session.exec(comando).all()
     if(len(matches)==0):
         session.add(r)
@@ -46,3 +47,6 @@ def salvarNoBanco(info: dict):
         return "Com Sucesso"
     else:
         return "Já Existe"
+
+def getNoBanco():
+    return
