@@ -15,6 +15,7 @@ def registrar(texto, jogador, idjogador):
     info["jogador"] = jogador
     info["idJogador"] = idjogador
     res = salvarNoBanco(info)
+    print(info)
     return res
 
 def resultado():
@@ -27,13 +28,14 @@ def processaTermo(texto):
     jogo = res[0]
     id = res[1][1:]
     if res[0] == "term.ooo":
-        pontos = [int(res[2].replace('*',"")[0])]
+        ponto = res[2].replace('*',"")[0]
+        pontos = [int(ponto) if ponto !="X" else 7]
     else:
         a = texto.split("\n")
         pontos = a[2]+a[3]
-        pontos = [ord(x) -48 for x in pontos]
-        pontos = [p for p in pontos if (p < 10 or p == 128949)]
-        pontos = [trad[res[0]] if p == 128949 else p for p in pontos]
+        pontos = [ord(x) -48 for x in pontos]#Converte emoji em numero
+        pontos = [p for p in pontos if (p < 10 or p == 128949)]#Remove emojis a mais
+        pontos = [trad[res[0]] if p == 128949 else p for p in pontos]#Troca falhas por pontuacao
     info  = {"jogo": jogo, "numero": id, "pontos": str(pontos)}
     return info
 

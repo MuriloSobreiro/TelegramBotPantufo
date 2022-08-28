@@ -36,20 +36,26 @@ def rolarDados(menssagem):
     print("Rolagem de dados: " + menssagem.text)
 
 def termooVerify(menssagem):
-    texto = menssagem.text
+    if menssagem.content_type == "text":
+        texto = menssagem.text
+    else:
+        texto = menssagem.caption
     return texto.startswith("joguei term.ooo") or texto.startswith("term.ooo")
 
-@bot.message_handler(func=termooVerify)
-def termoo(mensssagem):
-    print(mensssagem)
-    if mensssagem.from_user.last_name:
-        nome = mensssagem.from_user.first_name + " " + mensssagem.from_user.last_name
-    elif mensssagem.from_user.username:
-        nome = mensssagem.from_user.username
+@bot.message_handler(func=termooVerify, content_types=["text","photo"])
+def termoo(menssagem):
+    if menssagem.from_user.last_name:
+        nome = menssagem.from_user.first_name + " " + menssagem.from_user.last_name
+    elif menssagem.from_user.username:
+        nome = menssagem.from_user.username
     else:
-        nome = mensssagem.from_user.first_name
-    res = termooo.registrar(mensssagem.text, nome, mensssagem.from_user.id)
-    bot.send_message(mensssagem.chat.id,"Registro: " + str(res))
+        nome = menssagem.from_user.first_name
+    if menssagem.content_type == "text":
+        texto = menssagem.text
+    else:
+        texto = menssagem.caption
+    res = termooo.registrar(texto, nome, menssagem.from_user.id)
+    bot.send_message(menssagem.chat.id,"Registro: " + str(res))
     print("Registro de Termooo")
 
 def verificar(menssagem):
