@@ -24,19 +24,16 @@ def rolarDados(menssagem):
     if dados:
         res = rpg.rolarDados(dados[0])
         bot.reply_to(menssagem,res)
+    elif menssagem.text.endswith("moeda") or menssagem.text.endswith("🪙"):
+        print(menssagem)
+        res = rpg.rolarMoeda()
+        bot.send_sticker(menssagem.from_user.id,res,reply_to_message_id=menssagem.id)
+    elif menssagem.text.endswith("fechar"):
+        bot.send_message(menssagem.chat.id, text='Fechando rolagem', reply_markup=telebot.types.ReplyKeyboardRemove())
     else:
-        if menssagem.text.endswith("fechar"):
-            bot.send_message(menssagem.chat.id, text='Fechando rolagem', reply_markup=telebot.types.ReplyKeyboardRemove())
-            return
         keyboard = teclados.rolagemDados()
         bot.send_message(menssagem.chat.id, text='Escolha a rolagem', reply_markup=keyboard)
     print("Rolagem de dados: " + menssagem.text)
-    
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    if call.data.startswith("rolar"):
-        bot.answer_callback_query(call.id, rpg.rolarDados(call.data.replace("rolar ",'')))
 
 def termooVerify(menssagem):
     texto = menssagem.text
@@ -58,14 +55,15 @@ def termoo(mensssagem):
 def verificar(menssagem):
     return True
 
-@bot.message_handler(func=verificar)
+@bot.message_handler(func=verificar,content_types=['audio', 'photo', 'voice', 'video', 'document','text', 'location', 'contact', 'sticker'])
 def responder(menssagem):
     res ="""
     Não conheço esse comando, tente:
     - Enviar jogos de Term.ooo
     - /rolar para jogar dados
     """
-    print("Mensagem não tratada:" + menssagem.text)
+    print("Mensagem não tratada:")
+    print(menssagem)
     bot.reply_to(menssagem,res)
 
 bot.polling()
