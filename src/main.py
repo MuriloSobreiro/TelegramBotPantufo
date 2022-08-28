@@ -1,6 +1,7 @@
 import os
 import re
 import telebot
+import teclados
 from dotenv import load_dotenv
 
 import termooo
@@ -27,11 +28,7 @@ def rolarDados(menssagem):
         if menssagem.text.endswith("fechar"):
             bot.send_message(menssagem.chat.id, text='Fechando rolagem', reply_markup=telebot.types.ReplyKeyboardRemove())
             return
-        keyboard = telebot.types.ReplyKeyboardMarkup()
-        keyboard.row_width = 4
-        keyboard.add("/r fechar")
-        for d in ['4','6','8','10','12','20']:
-             keyboard.add('/r 1d'+d,'/r 2d'+d,'/r 3d'+d,'/r 4d'+d)
+        keyboard = teclados.rolagemDados()
         bot.send_message(menssagem.chat.id, text='Escolha a rolagem', reply_markup=keyboard)
     print("Rolagem de dados: " + menssagem.text)
     
