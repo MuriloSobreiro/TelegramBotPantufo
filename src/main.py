@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import os
 import re
 import telebot
@@ -18,6 +19,24 @@ Rolagem de dados
 
 
 """
+@bot.message_handler(commands=["termo","termoo","termooo"])
+def termooResultado(menssagem):
+    dia = re.findall(r"\d{4}-\d{1,2}-\d{1,2}", menssagem.text)
+    if menssagem.text.find("resultado") > 0:
+        if dia:
+            res = termooo.resultado(dia[0])
+        elif menssagem.text.endswith("ontem"):
+            res = termooo.resultado(str((datetime.now()-timedelta(1)).date()))
+        else:
+            res = termooo.resultado()
+        bot.reply_to(menssagem,res)
+    else:
+        bot.reply_to(menssagem,"""
+/termo resultado, para o resultado de hoje
+/termo resultado ontem, para o resultado de ontem
+/termo resultado YYYY-MM-DD, para um resultado anterior""")
+
+    print("Resultado termooo")
 @bot.message_handler(commands=["rolar","rola","roll","r"])
 def rolarDados(menssagem):
     dados = re.findall(r"\d+d\d+", menssagem.text)
@@ -25,7 +44,6 @@ def rolarDados(menssagem):
         res = rpg.rolarDados(dados[0])
         bot.reply_to(menssagem,res)
     elif menssagem.text.endswith("moeda") or menssagem.text.endswith("🪙"):
-        print(menssagem)
         res = rpg.rolarMoeda()
         bot.send_sticker(menssagem.from_user.id,res,reply_to_message_id=menssagem.id)
     elif menssagem.text.endswith("fechar"):
@@ -43,7 +61,7 @@ def termooVerify(menssagem):
     return texto.startswith("joguei term.ooo") or texto.startswith("term.ooo")
 
 @bot.message_handler(func=termooVerify, content_types=["text","photo"])
-def termoo(menssagem):
+def termooRegistro(menssagem):
     if menssagem.from_user.last_name:
         nome = menssagem.from_user.first_name + " " + menssagem.from_user.last_name
     elif menssagem.from_user.username:
@@ -55,7 +73,7 @@ def termoo(menssagem):
     else:
         texto = menssagem.caption
     res = termooo.registrar(texto, nome, menssagem.from_user.id)
-    bot.send_message(menssagem.chat.id,"Registro: " + str(res))
+    bot.reply_to(menssagem,"Registro: " + str(res))
     print("Registro de Termooo")
 
 def verificar(menssagem):
@@ -63,9 +81,12 @@ def verificar(menssagem):
 
 @bot.message_handler(func=verificar,content_types=['audio', 'photo', 'voice', 'video', 'document','text', 'location', 'contact', 'sticker'])
 def responder(menssagem):
+    if menssagem.chat.type == "group":
+        return
     res ="""
     Não conheço esse comando, tente:
     - Enviar jogos de Term.ooo
+    - /termo para resultados
     - /rolar para jogar dados
     """
     print("Mensagem não tratada:")
