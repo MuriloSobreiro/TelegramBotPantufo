@@ -50,7 +50,10 @@ def rolarDados(menssagem):
         bot.send_message(menssagem.chat.id, text='Fechando rolagem', reply_markup=telebot.types.ReplyKeyboardRemove())
     else:
         keyboard = teclados.rolagemDados()
-        bot.send_message(menssagem.chat.id, text='Escolha a rolagem', reply_markup=keyboard)
+        bot.send_message(menssagem.chat.id, reply_markup=keyboard, text="""
+Esolha a rolagem com o teclado
+OU Envie sua rolagem Ex:(1d5, 20d10, 69d420)
+""")
     print("Rolagem de dados: " + menssagem.text)
 
 def termooVerify(menssagem):
@@ -62,16 +65,8 @@ def termooVerify(menssagem):
 
 @bot.message_handler(func=termooVerify, content_types=["text","photo"])
 def termooRegistro(menssagem):
-    if menssagem.from_user.last_name:
-        nome = menssagem.from_user.first_name + " " + menssagem.from_user.last_name
-    elif menssagem.from_user.username:
-        nome = menssagem.from_user.username
-    else:
-        nome = menssagem.from_user.first_name
-    if menssagem.content_type == "text":
-        texto = menssagem.text
-    else:
-        texto = menssagem.caption
+    nome = termooo.getNome(menssagem)
+    texto = termooo.getTexto(menssagem)
     res = termooo.registrar(texto, nome, menssagem.from_user.id)
     bot.reply_to(menssagem,"Registro: " + str(res))
     print("Registro de Termooo")

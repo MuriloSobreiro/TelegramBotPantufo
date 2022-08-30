@@ -4,8 +4,11 @@ import pandas as pd
 import itertools
 from sqlmodel import Session, SQLModel, create_engine, select
 from modelos import *
+import os
+from dotenv import load_dotenv
 
-engine = create_engine("sqlite:///database.db", connect_args={'check_same_thread': False})
+load_dotenv()
+engine = create_engine(os.environ["DB"], connect_args={'check_same_thread': False})
 session = Session(engine)
 
 SQLModel.metadata.create_all(engine)
@@ -163,3 +166,19 @@ def jogoAtual():
     hoje = datetime.now()
     delta = (hoje-objetivo).days
     return [236+delta,185+delta]
+
+def getNome(menssagem):
+    if menssagem.from_user.last_name:
+        nome = menssagem.from_user.first_name + " " + menssagem.from_user.last_name
+    elif menssagem.from_user.username:
+        nome = menssagem.from_user.username
+    else:
+        nome = menssagem.from_user.first_name
+    return nome
+    
+def getTexto(menssagem):
+    if menssagem.content_type == "text":
+        texto = menssagem.text
+    else:
+        texto = menssagem.caption
+    return texto
