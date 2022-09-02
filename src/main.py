@@ -19,6 +19,11 @@ Rolagem de dados
 
 
 """
+@bot.message_handler(commands=["util"])
+def utils(menssagem):
+    if menssagem.text.endswith("id"):
+        bot.reply_to(menssagem,menssagem.from_user.id)
+
 @bot.message_handler(commands=["termo","termoo","termooo"])
 def termooResultado(menssagem):
     dia = re.findall(r"\d{4}-\d{1,2}-\d{1,2}", menssagem.text)
