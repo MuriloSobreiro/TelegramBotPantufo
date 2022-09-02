@@ -9,3 +9,8 @@ class Termooo(SQLModel, table=True):
     jogo: str
     numero: str
     pontos: str
+
+class TermoooGroups(SQLModel, table = True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    chatId: int
+    jogadores: str

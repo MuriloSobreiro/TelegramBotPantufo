@@ -24,8 +24,9 @@ def registrar(texto, jogador, idjogador):
     print(info)
     return res
 
-def resultado(dia: str = str(datetime.now().date()), jogadores: list = None):
-    dados = getNoBanco(dia)
+def resultado(dia: str = str(datetime.now().date()), chatId = 0):
+    jogadores = getJogadores(chatId)
+    dados = getNoBanco(dia, jogadores)
     jogos = getJogo(dia)
     infos = processaDados(dados)
     resultados = processaInfos(infos)
@@ -141,13 +142,14 @@ def salvarNoBanco(info: dict):
     else:
         return "Já Existe"
 
-def getNoBanco(dia: str):
+def getNoBanco(dia: str, idJogadores: str = ""):
     jogos = getJogo(dia)
     comando = f"""
     SELECT idJogador, jogador, pontos
     FROM termooo
-    WHERE (jogo = 'term.ooo' AND numero = '{jogos[0]}')
-    OR (NOT jogo = 'term.ooo' AND numero = '{jogos[1]}')
+    WHERE ((jogo = 'term.ooo' AND numero = '{jogos[0]}')
+    OR (NOT jogo = 'term.ooo' AND numero = '{jogos[1]}'))
+    {f"AND idJogador in ({idJogadores})" if idJogadores else ""}
     """
     matches = session.exec(comando).all()
     return matches
@@ -182,3 +184,34 @@ def getTexto(menssagem):
     else:
         texto = menssagem.caption
     return texto
+
+def saveJogadores(chatId, jogadores):
+    jogadores = str(jogadores)
+    r = TermoooGroups(chatId=chatId, jogadores=jogadores)
+    comando = select(TermoooGroups).where(TermoooGroups.chatId==chatId)
+    match = session.exec(comando).first()
+    if match:
+        match.jogadores = r.jogadores
+    else:
+        session.add(r)
+    session.commit()
+
+def getJogadores(chatId):
+    comando = select(TermoooGroups).where(TermoooGroups.chatId==chatId)
+    match = session.exec(comando).first()
+    if match:
+        jogadores = [str(j) for j in eval(match.jogadores)]
+        jogadores = ', '.join(jogadores)
+        return jogadores
+    return ""
+
+def addId(chatId, id):
+    comando = select(TermoooGroups).where(TermoooGroups.chatId==chatId)
+    match = session.exec(comando).first()
+    if match:
+        jogadores = eval(match.jogadores)
+        id = int(id)
+        if id not in jogadores:
+            jogadores.append(id)
+            match.jogadores = str(jogadores)
+            session.commit()

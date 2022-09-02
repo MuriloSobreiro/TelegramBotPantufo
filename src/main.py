@@ -22,14 +22,25 @@ Rolagem de dados
 @bot.message_handler(commands=["termo","termoo","termooo"])
 def termooResultado(menssagem):
     dia = re.findall(r"\d{4}-\d{1,2}-\d{1,2}", menssagem.text)
+    chatId = menssagem.chat.id
     if menssagem.text.find("resultado") > 0:
         if dia:
-            res = termooo.resultado(dia[0])
+            res = termooo.resultado(dia[0],chatId)
         elif menssagem.text.endswith("ontem"):
-            res = termooo.resultado(str((datetime.now()-timedelta(1)).date()))
+            res = termooo.resultado(str((datetime.now()-timedelta(1)).date()),chatId)
         else:
-            res = termooo.resultado()
+            res = termooo.resultado(chatId=chatId)
         bot.reply_to(menssagem,res)
+    elif menssagem.text.find("config") > 0:
+        if menssagem.text.find("addId") > 0:
+            termooo.addId(chatId, menssagem.text.split()[-1])
+            return
+        ids = [menssagem.from_user.id]
+        for e in menssagem.entities:
+            if e.type == "text_mention":
+                ids.append(e.user.id)
+        termooo.saveJogadores(chatId,ids)
+
     else:
         bot.reply_to(menssagem,"""
 /termo resultado, para o resultado de hoje
@@ -76,6 +87,8 @@ def verificar(menssagem):
 
 @bot.message_handler(func=verificar,content_types=['audio', 'photo', 'voice', 'video', 'document','text', 'location', 'contact', 'sticker'])
 def responder(menssagem):
+    print("Mensagem não tratada:")
+    print(menssagem)
     if menssagem.chat.type == "group":
         return
     res ="""
@@ -84,8 +97,6 @@ def responder(menssagem):
     - /termo para resultados
     - /rolar para jogar dados
     """
-    print("Mensagem não tratada:")
-    print(menssagem)
     bot.reply_to(menssagem,res)
 
 bot.polling()
