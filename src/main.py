@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import os
 import re
 import telebot
+from singletons import TelegramBot
 import teclados
 from dotenv import load_dotenv
 
@@ -9,7 +10,9 @@ import termooo
 import rpg
 
 load_dotenv()
-bot = telebot.TeleBot(os.environ["BOT_AUTH"])
+
+bot = TelegramBot().bot
+
 print("Bot iniciado")
 
 """
@@ -19,6 +22,13 @@ Rolagem de dados
 
 
 """
+@bot.message_handler(commands=["registrar"], content_types=["text","photo"])
+def registrar(menssagem):
+    if menssagem.text.endswith("item"):
+        rpg.item = {}
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do item?")
+        bot.register_next_step_handler(msg, rpg.registrarNome)
+
 @bot.message_handler(commands=["util"])
 def utils(menssagem):
     if menssagem.text.endswith("id"):

@@ -2,16 +2,12 @@ from datetime import datetime
 import re
 import pandas as pd
 import itertools
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import  select
 from modelos import *
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-engine = create_engine(os.environ["DB"], connect_args={'check_same_thread': False})
-session = Session(engine)
+from singletons import DataBase
 
-SQLModel.metadata.create_all(engine)
+session = DataBase().session
 
 trad = {"term.ooo/2": 8,"term.ooo/4": 10}
 frases = ["Por pouquíssimo","Por pouco", "Sem dificuldades","Esmagadora"]

@@ -1,5 +1,8 @@
 from random import randint
 import numpy as np
+from singletons import TelegramBot
+
+item = {"nome":"","descricao":"","imagem":"","atributos":"","tag":""}
 
 def rolarDados(dados: str) -> str:
     res = f"{dados}🎲: "
@@ -24,3 +27,35 @@ def rolarDados(dados: str) -> str:
 def rolarMoeda():
     r = ["CAACAgEAAxkBAAIBx2MK2QAB52-S-AT6NFB5ii-C9KPlWwACEQIAAhKiUETlVaD1jaRdnikE","CAACAgEAAxkBAAIB0mMK20vynNzqCQ6V3uPNP7hRtYW4AAIKAANK8GFNl91huJOv1TEpBA"]
     return r[randint(0,1)]
+
+bot = TelegramBot().bot
+
+def registrarNome(menssagem):
+    item["nome"] = menssagem.text
+    print(item)
+    msg = bot.send_message(menssagem.chat.id, "Me envie o link da imagem.")
+    bot.register_next_step_handler(msg, registrarImagem)
+
+def registrarImagem(menssagem):
+    print(menssagem)
+    if menssagem.content_type == "text":
+        bot.send_message(menssagem.chat.id, "link registrado")
+        item["imagem"] = menssagem.text
+    else:
+        bot.send_message(menssagem.chat.id, "registro de imagens não implementado")
+    print(item)
+    msg = bot.send_message(menssagem.chat.id, "Qual a Descrição?")
+    bot.register_next_step_handler(msg, registrarDescricao)
+
+def registrarDescricao(menssagem):
+    item["descricao"] = menssagem.text
+    print(item)
+    msg = bot.send_message(menssagem.chat.id, "Qual a tag do item?")
+    bot.register_next_step_handler(msg, registrarTag)
+
+def registrarTag(menssagem):
+    item["tag"] = menssagem.text
+    print(item)
+
+def guardarImagem(imagem) -> str:
+    return "Não guardado"
