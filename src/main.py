@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-import os
 import re
 import telebot
 from singletons import DataBase, TelegramBot
@@ -12,7 +11,6 @@ import rpg
 bot = TelegramBot().bot
 session = DataBase().session
 SQLModel.metadata.create_all(DataBase().engine)
-os.system("uvicorn src.backend.main:app --reload")
 print("Bot iniciado")
 
 """
