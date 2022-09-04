@@ -1,18 +1,16 @@
 from datetime import datetime, timedelta
-import os
 import re
 import telebot
-from singletons import TelegramBot
+from singletons import DataBase, TelegramBot
 import teclados
-from dotenv import load_dotenv
+from sqlmodel import SQLModel
 
 import termooo
 import rpg
 
-load_dotenv()
-
 bot = TelegramBot().bot
-
+session = DataBase().session
+SQLModel.metadata.create_all(DataBase().engine)
 print("Bot iniciado")
 
 """
@@ -87,7 +85,9 @@ def termooVerify(menssagem):
         texto = menssagem.text
     else:
         texto = menssagem.caption
-    return texto.startswith("joguei term.ooo") or texto.startswith("term.ooo")
+    if texto:
+        return texto.startswith("joguei term.ooo") or texto.startswith("term.ooo")
+    return False
 
 @bot.message_handler(func=termooVerify, content_types=["text","photo"])
 def termooRegistro(menssagem):

@@ -20,7 +20,7 @@ class Items(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nome: str
     descricao: str
-    atributos: str
+    atributos: str = Field(default="")
     imagem: str
     tag: str
     inclusao: datetime = Field(default=datetime.now())

@@ -20,4 +20,3 @@ class TelegramBot(metaclass=SingletonMeta):
 class DataBase(metaclass=SingletonMeta):
     engine = create_engine(os.environ["DB"], connect_args={'check_same_thread': False})
     session = Session(engine)
-    SQLModel.metadata.create_all(engine)

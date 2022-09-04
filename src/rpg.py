@@ -1,8 +1,11 @@
 from random import randint
 import numpy as np
-from singletons import TelegramBot
+from modelos import Items
+from singletons import DataBase, TelegramBot
+import imgurApi
 
 item = {"nome":"","descricao":"","imagem":"","atributos":"","tag":""}
+session = DataBase.session
 
 def rolarDados(dados: str) -> str:
     res = f"{dados}🎲: "
@@ -33,29 +36,43 @@ bot = TelegramBot().bot
 def registrarNome(menssagem):
     item["nome"] = menssagem.text
     print(item)
-    msg = bot.send_message(menssagem.chat.id, "Me envie o link da imagem.")
+    msg = bot.send_message(menssagem.chat.id, "Me envie a imagem ou o link da imagem.")
     bot.register_next_step_handler(msg, registrarImagem)
 
 def registrarImagem(menssagem):
-    print(menssagem)
     if menssagem.content_type == "text":
-        bot.send_message(menssagem.chat.id, "link registrado")
         item["imagem"] = menssagem.text
+        bot.send_message(menssagem.chat.id, "link registrado")
     else:
-        bot.send_message(menssagem.chat.id, "registro de imagens não implementado")
-    print(item)
+        m = bot.send_message(menssagem.chat.id, "Subindo imagem para Imgur")
+        foto = bot.get_file_url(menssagem.photo[-1].file_id)
+        url = uploadImgur(foto, item["nome"])
+        if url:
+            item["imagem"] = url
+            bot.edit_message_text("Registro com sucesso ✅", m.chat.id,m.message_id)
+        else:
+            item["imagem"] = ""
+            bot.edit_message_text("Falha ao salvar imagem ❌", m.chat.id,m.message_id)
     msg = bot.send_message(menssagem.chat.id, "Qual a Descrição?")
     bot.register_next_step_handler(msg, registrarDescricao)
 
 def registrarDescricao(menssagem):
     item["descricao"] = menssagem.text
-    print(item)
     msg = bot.send_message(menssagem.chat.id, "Qual a tag do item?")
     bot.register_next_step_handler(msg, registrarTag)
 
 def registrarTag(menssagem):
     item["tag"] = menssagem.text
-    print(item)
+    salvaritem()
+    bot.send_message(menssagem.chat.id, "Item salvo com sucesso")
+    
+def salvaritem():
+    r = Items(**item)
+    session.add(r)
+    session.commit()
 
-def guardarImagem(imagem) -> str:
-    return "Não guardado"
+def uploadImgur(imagem,titulo,desc = "") -> str:
+    r = imgurApi.subirImagem(imagem,titulo,desc)
+    if r:
+        return r
+    return ""
