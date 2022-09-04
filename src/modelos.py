@@ -25,9 +25,9 @@ class Items(SQLModel, table=True):
     tag: str
     inclusao: datetime = Field(default=datetime.now())
 
-class Inventario(SQLModel, table=True):
+class Personagens(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    jogador: str
     nome: str
     itens: str
-    tag: str
+    status: str
+    campanha: str
