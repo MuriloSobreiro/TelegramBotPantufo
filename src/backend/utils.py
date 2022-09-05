@@ -18,14 +18,18 @@ def getItens(campanha: str) -> list:
 def getPersonagens(campanha: str) -> list:
     comando = select(Personagens).where(Personagens.campanha == campanha)
     matches = session.exec(comando).all()
-    print(matches)
+    res = []
     for match in matches:
+        res.append(match.dict())
+    
+    for r in res:
         try:
-            match.status = eval(match.status)
+            r["status"] = eval(r["status"])
         except:
             pass
-        match.itens = getItensInfo(match.itens)
-    return matches
+        i = eval(r["itens"])
+        r["itens"] = getItensInfo(i)
+    return res
 
 def getInventario(id: int) -> list:
     comando = select(Personagens.itens).where(Personagens.id == id)
@@ -36,6 +40,8 @@ def getInventario(id: int) -> list:
     return []
 
 def getItensInfo(lista: list):
+    if len(lista) == 1:
+        lista.append(0)
     comando = f"""
     SELECT *
     FROM items
