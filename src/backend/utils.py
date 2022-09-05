@@ -16,8 +16,15 @@ def getItens(campanha: str) -> list:
     return matches
 
 def getPersonagens(campanha: str) -> list:
-    comando = select(Personagens.id, Personagens.nome).where(Personagens.campanha == campanha)
+    comando = select(Personagens).where(Personagens.campanha == campanha)
     matches = session.exec(comando).all()
+    print(matches)
+    for match in matches:
+        try:
+            match.status = eval(match.status)
+        except:
+            pass
+        match.itens = getItensInfo(match.itens)
     return matches
 
 def getInventario(id: int) -> list:
