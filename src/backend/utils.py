@@ -6,7 +6,7 @@ from src.singletons import DataBase
 session = DataBase().session
 
 def getCampanhas() -> list:
-    comando = select(Personagens.campanha).distinct()
+    comando = select(Items.tag).distinct()
     matches = session.exec(comando).all()
     return matches
 

@@ -17,7 +17,6 @@ def subirImagem(imagem, titulo:str, desc:str = ""):
     }
 
     response = requests.post("https://api.imgur.com/3/upload", headers=header, data=body).json()
-    print(response)
     if response["success"]:
         return response["data"]["link"]
     return False

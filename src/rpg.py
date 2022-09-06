@@ -1,8 +1,10 @@
 from random import randint
 import numpy as np
 from modelos import Items
+from sqlmodel import select
 from singletons import DataBase, TelegramBot
 import imgurApi
+import teclados
 
 item = {"nome":"","descricao":"","imagem":"","atributos":"","tag":""}
 session = DataBase.session
@@ -35,7 +37,6 @@ bot = TelegramBot().bot
 
 def registrarNome(menssagem):
     item["nome"] = menssagem.text
-    print(item)
     msg = bot.send_message(menssagem.chat.id, "Me envie a imagem ou o link da imagem.")
     bot.register_next_step_handler(msg, registrarImagem)
 
@@ -58,7 +59,10 @@ def registrarImagem(menssagem):
 
 def registrarDescricao(menssagem):
     item["descricao"] = menssagem.text
-    msg = bot.send_message(menssagem.chat.id, "Qual a tag do item?")
+    comando = select(Items.tag).distinct()
+    matches = session.exec(comando).all()
+    keyboard = teclados.itemTags(matches)
+    msg = bot.send_message(menssagem.chat.id, "Qual a tag do item?", reply_markup=keyboard)
     bot.register_next_step_handler(msg, registrarTag)
 
 def registrarTag(menssagem):
