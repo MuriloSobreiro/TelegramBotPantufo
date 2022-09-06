@@ -65,6 +65,18 @@ def createPersonagem(nome, campanha, status):
         return {"sucesso": False}
     session.add(p)
     session.commit()
+    comando = select(Personagens).where(Personagens.nome == nome).where(Personagens.campanha == campanha)
+    match = session.exec(comando).first()
+    return {"sucesso": True,
+            "id": match.id}
+
+def deletePersonagem(id):
+    comando = select(Personagens).where(Personagens.id == id)
+    match = session.exec(comando).first()
+    if not match:
+        return {"sucesso": False}
+    session.delete(match)
+    session.commit()
     return {"sucesso": True}
 
 def updateStatus(id, status):

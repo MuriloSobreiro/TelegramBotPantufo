@@ -43,6 +43,10 @@ async def updateStatus(id: int, status: str):
 async def createPersonagem(nome: str, campanha: str, status = "[]"):
     return utils.createPersonagem(nome, campanha, status)
 
+@app.delete("/delete_personagem")
+async def deletePersonagem(id: int):
+    return utils.deletePersonagem(id)
+
 @app.post("/addItem")
 async def addItem(idPersonagem: int, idItem: int):
     return utils.addItem(idPersonagem,idItem)
