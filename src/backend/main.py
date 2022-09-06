@@ -40,7 +40,7 @@ async def updateStatus(id: int, status: str):
     return utils.updateStatus(id, status)
 
 @app.post("/create_personagem")
-async def createPersonagem(nome: str, campanha: str, status = {}):
+async def createPersonagem(nome: str, campanha: str, status = "[]"):
     return utils.createPersonagem(nome, campanha, status)
 
 @app.post("/addItem")

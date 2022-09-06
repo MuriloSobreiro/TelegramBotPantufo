@@ -57,8 +57,12 @@ def getStatus(id: int) -> dict:
         return eval(match)
     return {}
 
-def createPersonagem(nome, campanha, status = {}):
+def createPersonagem(nome, campanha, status):
     p = Personagens(nome=nome, itens="[]", status=status, campanha=campanha)
+    comando = select(Personagens).where(Personagens.nome == nome).where(Personagens.campanha == campanha)
+    match = session.exec(comando).first()
+    if match:
+        return {"sucesso": False}
     session.add(p)
     session.commit()
     return {"sucesso": True}
