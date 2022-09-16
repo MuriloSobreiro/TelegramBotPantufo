@@ -6,7 +6,9 @@ import teclados
 from sqlmodel import SQLModel
 
 import termooo
-import rpg
+import rpg.rpg as rpg
+import rpg.itens as itens
+import rpg.npcs as npcs
 
 bot = TelegramBot().bot
 session = DataBase().session
@@ -17,15 +19,57 @@ print("Bot iniciado")
 Features:
 Calculadora de Term.ooo
 Rolagem de dados
-
+/npc e /item
 
 """
-@bot.message_handler(commands=["registrar"], content_types=["text","photo"])
-def registrar(menssagem):
-    if menssagem.text.endswith("item"):
+@bot.message_handler(commands=["item","i"], content_types=["text","photo"])
+def item(menssagem):
+    comando = menssagem.text.split(" ")[-1].lower()
+    if comando in ["registrar", "r"]:
         rpg.item = {}
         msg = bot.send_message(menssagem.chat.id, "Qual o nome do item?")
-        bot.register_next_step_handler(msg, rpg.registrarNome)
+        bot.register_next_step_handler(msg, itens.registrarNome)
+    elif comando in ["editar", "e"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do item?")
+        bot.register_next_step_handler(msg, itens.editar)
+    elif comando in ["deletar", "d"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do item?")
+        bot.register_next_step_handler(msg, itens.deletar)
+    elif comando in ["vizualizar", "v"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do item?")
+        bot.register_next_step_handler(msg, itens.visualizar)
+    else:
+        bot.send_message(menssagem.chat.id, """
+Você descobriu os comandos de itens, tente
+/item registrar, para um novo item
+/item visualizar, para ver os itens existentes
+/item editar, para editar um item
+/item deletar, para deletar um item
+""")
+
+@bot.message_handler(commands=["npc","n"], content_types=["text","photo"])
+def item(menssagem):
+    comando = menssagem.text.split(" ")[-1].lower()
+    if comando in ["registrar", "r"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do NPC?")
+        bot.register_next_step_handler(msg, npcs.registrar)
+    elif comando in ["editar", "e"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
+        bot.register_next_step_handler(msg, npcs.editar)
+    elif comando in ["deletar", "d"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
+        bot.register_next_step_handler(msg, npcs.deletar)
+    elif comando in ["vizualizar", "v"]:
+        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
+        bot.register_next_step_handler(msg, npcs.visualizar)
+    else:
+        bot.send_message(menssagem.chat.id, """
+Você descobriu os comandos de npc, tente
+/npc registrar, para um novo npc
+/npc visualizar, para ver os npcs existentes
+/npc editar, para editar um npc
+/npc deletar, para deletar um npc
+""")
 
 @bot.message_handler(commands=["util"])
 def utils(menssagem):
