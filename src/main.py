@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 import telebot
+from telebot.types import Message
 from singletons import DataBase, TelegramBot
 import teclados
 from sqlmodel import SQLModel
@@ -23,7 +24,7 @@ Rolagem de dados
 
 """
 @bot.message_handler(commands=["item","i"], content_types=["text","photo"])
-def item(menssagem):
+def item(menssagem: Message):
     comando = menssagem.text.split(" ")[-1].lower()
     if comando in ["registrar", "r"]:
         rpg.item = {}
@@ -48,36 +49,60 @@ Você descobriu os comandos de itens, tente
 """)
 
 @bot.message_handler(commands=["npc","n"], content_types=["text","photo"])
-def item(menssagem):
-    comando = menssagem.text.split(" ")[-1].lower()
-    if comando in ["registrar", "r"]:
+def item(menssagem: Message):
+    comandos = [m.lower() for m in menssagem.text.split(" ")]
+    comando = comandos[-1]
+    
+    if comando in ["grupo", "g"]:
+        g = npcs.getGrupos()
+        msg = bot.send_message(menssagem.chat.id, "Escolha o grupo a editar", reply_markup=teclados.itemTags(g))
+        bot.register_next_step_handler(msg, npcs.setGrupo)
+
+    elif comando in ["vizualizar", "v"]:
+        if not npcs.getGrupo():
+            bot.send_message(menssagem.chat.id,"Por favor escolha um grupo com /npc g", reply_markup=teclados.itemTags(["/npc grupo"]))
+            return
+        msg = bot.send_message(menssagem.chat.id, "Qual o nome do NPC?", reply_markup=teclados.itemTags(npcs.npcs()))
+        bot.register_next_step_handler(msg, npcs.visualizar)
+    
+    elif comando in ["registrar", "r"]:
+        if not npcs.getGrupo():
+            bot.send_message(menssagem.chat.id,"Por favor escolha um grupo com /npc g", reply_markup=teclados.itemTags(["/npc grupo"]))
+            return
         msg = bot.send_message(menssagem.chat.id, "Qual o nome do NPC?")
         bot.register_next_step_handler(msg, npcs.registrar)
+
     elif comando in ["editar", "e"]:
-        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
+        if not npcs.getGrupo():
+            bot.send_message(menssagem.chat.id,"Por favor escolha um grupo com /npc g", reply_markup=teclados.itemTags(["/npc grupo"]))
+            return
+        msg = bot.send_message(menssagem.chat.id, "Qual o Nome do NPC?", reply_markup=teclados.itemTags(npcs.npcs()))
         bot.register_next_step_handler(msg, npcs.editar)
+    
     elif comando in ["deletar", "d"]:
-        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
+        if not npcs.getGrupo():
+            bot.send_message(menssagem.chat.id,"Por favor escolha um grupo com /npc g", reply_markup=teclados.itemTags(["/npc grupo"]))
+            return
+        msg = bot.send_message(menssagem.chat.id, "Qual NPC dejesa deletar?", reply_markup=teclados.itemTags(npcs.npcs()))
         bot.register_next_step_handler(msg, npcs.deletar)
-    elif comando in ["vizualizar", "v"]:
-        msg = bot.send_message(menssagem.chat.id, "Qual o time do NPC?")
-        bot.register_next_step_handler(msg, npcs.visualizar)
+    
     else:
         bot.send_message(menssagem.chat.id, """
 Você descobriu os comandos de npc, tente
+/npc grupo, para escolher um grupo
 /npc registrar, para um novo npc
-/npc visualizar, para ver os npcs existentes
+/npc visualizar, para visualizar um npc
 /npc editar, para editar um npc
 /npc deletar, para deletar um npc
-""")
+""", reply_markup=teclados.itemTags(["/npc grupo", "/npc registrar", "/npc vizualizar", "/npc editar", "/npc deletar"]))
 
 @bot.message_handler(commands=["util"])
-def utils(menssagem):
+def utils(menssagem: Message):
     if menssagem.text.endswith("id"):
         bot.reply_to(menssagem,menssagem.from_user.id)
 
 @bot.message_handler(commands=["termo","termoo","termooo"])
-def termooResultado(menssagem):
+def termooResultado(menssagem: Message):
     dia = re.findall(r"\d{4}-\d{1,2}-\d{1,2}", menssagem.text)
     chatId = menssagem.chat.id
     if menssagem.text.find("resultado") > 0:
@@ -106,7 +131,7 @@ def termooResultado(menssagem):
 
     print("Resultado termooo")
 @bot.message_handler(commands=["rolar","rola","roll","r"])
-def rolarDados(menssagem):
+def rolarDados(menssagem: Message):
     dados = re.findall(r"\d+d\d+", menssagem.text)
     if dados:
         res = rpg.rolarDados(dados[0])
@@ -124,7 +149,7 @@ OU Envie sua rolagem Ex:(1d5, 20d10, 69d420)
 """)
     print("Rolagem de dados: " + menssagem.text)
 
-def termooVerify(menssagem):
+def termooVerify(menssagem: Message):
     if menssagem.content_type == "text":
         texto = menssagem.text
     else:
@@ -134,7 +159,7 @@ def termooVerify(menssagem):
     return False
 
 @bot.message_handler(func=termooVerify, content_types=["text","photo"])
-def termooRegistro(menssagem):
+def termooRegistro(menssagem: Message):
     nome = termooo.getNome(menssagem)
     texto = termooo.getTexto(menssagem)
     res = termooo.registrar(texto, nome, menssagem.from_user.id)
@@ -145,7 +170,7 @@ def verificar(menssagem):
     return True
 
 @bot.message_handler(func=verificar,content_types=['audio', 'photo', 'voice', 'video', 'document','text', 'location', 'contact', 'sticker'])
-def responder(menssagem):
+def responder(menssagem: Message):
     print("Mensagem não tratada:")
     print(menssagem)
     if menssagem.chat.type == "group":
