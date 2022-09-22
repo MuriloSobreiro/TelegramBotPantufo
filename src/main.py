@@ -59,11 +59,9 @@ def item(menssagem: Message):
         bot.register_next_step_handler(msg, npcs.setGrupo)
 
     elif comando in ["vizualizar", "v"]:
-        if not npcs.getGrupo():
-            bot.send_message(menssagem.chat.id,"Por favor escolha um grupo com /npc g", reply_markup=teclados.itemTags(["/npc grupo"]))
-            return
-        msg = bot.send_message(menssagem.chat.id, "Qual o nome do NPC?", reply_markup=teclados.itemTags(npcs.npcs()))
-        bot.register_next_step_handler(msg, npcs.visualizar)
+        g = npcs.getGrupos()
+        msg = bot.send_message(menssagem.chat.id, "Escolha o grupo a visualizar", reply_markup=teclados.itemTags(g))
+        bot.register_next_step_handler(msg, npcs.visualizarGrupo)
     
     elif comando in ["registrar", "r"]:
         if not npcs.getGrupo():

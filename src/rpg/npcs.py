@@ -31,6 +31,13 @@ def registrar(mensagem: Message):
 def npcs():
     return getNPCs(os.environ["Grupo"])
 
+def visualizarGrupo(mensagem: Message):
+    os.environ["Grupo"] = mensagem.text
+    g = os.environ["Grupo"]
+    bot.send_message(mensagem.chat.id, f"✅ {g} selecionado")
+    msg = bot.send_message(mensagem.chat.id, "Qual o nome do NPC?", reply_markup=teclados.itemTags(npcs()))
+    bot.register_next_step_handler(msg, visualizar)
+
 def visualizar(mensagem: Message):
     r = getNPCInfo(mensagem.text, os.environ["Grupo"])
     m = formatNPCInfo(r)
