@@ -3,6 +3,7 @@ from typing import Optional
 
 from sqlmodel import SQLModel, Field
 
+
 class Termooo(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     idJogador: int
@@ -11,10 +12,12 @@ class Termooo(SQLModel, table=True):
     numero: str
     pontos: str
 
-class TermoooGroups(SQLModel, table = True):
+
+class TermoooGroups(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     chatId: int
     jogadores: str
+
 
 class Items(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -24,6 +27,7 @@ class Items(SQLModel, table=True):
     imagem: str
     tag: str
     inclusao: datetime = Field(default=datetime.now())
+
 
 class Personagens(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

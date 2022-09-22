@@ -5,15 +5,18 @@ from src.singletons import DataBase
 
 session = DataBase().session
 
+
 def getCampanhas() -> list:
     comando = select(Items.tag).distinct()
     matches = session.exec(comando).all()
     return matches
 
+
 def getItens(campanha: str) -> list:
     comando = select(Items).where(Items.tag == campanha)
     matches = session.exec(comando).all()
     return matches
+
 
 def getPersonagens(campanha: str) -> list:
     comando = select(Personagens).where(Personagens.campanha == campanha)
@@ -21,7 +24,7 @@ def getPersonagens(campanha: str) -> list:
     res = []
     for match in matches:
         res.append(match.dict())
-    
+
     for r in res:
         try:
             r["status"] = eval(r["status"])
@@ -31,6 +34,7 @@ def getPersonagens(campanha: str) -> list:
         r["itens"] = getItensInfo(i)
     return res
 
+
 def getInventario(id: int) -> list:
     comando = select(Personagens.itens).where(Personagens.id == id)
     match = session.exec(comando).first()
@@ -38,6 +42,7 @@ def getInventario(id: int) -> list:
         itens = eval(match)
         return getItensInfo(itens)
     return []
+
 
 def getItensInfo(lista: list):
     if len(lista) == 1:
@@ -50,6 +55,7 @@ def getItensInfo(lista: list):
     matches = session.exec(comando).all()
     return matches
 
+
 def getStatus(id: int) -> dict:
     comando = select(Personagens.status).where(Personagens.id == id)
     match = session.exec(comando).first()
@@ -57,18 +63,27 @@ def getStatus(id: int) -> dict:
         return eval(match)
     return {}
 
+
 def createPersonagem(nome, campanha, status):
     p = Personagens(nome=nome, itens="[]", status=status, campanha=campanha)
-    comando = select(Personagens).where(Personagens.nome == nome).where(Personagens.campanha == campanha)
+    comando = (
+        select(Personagens)
+        .where(Personagens.nome == nome)
+        .where(Personagens.campanha == campanha)
+    )
     match = session.exec(comando).first()
     if match:
         return {"sucesso": False}
     session.add(p)
     session.commit()
-    comando = select(Personagens).where(Personagens.nome == nome).where(Personagens.campanha == campanha)
+    comando = (
+        select(Personagens)
+        .where(Personagens.nome == nome)
+        .where(Personagens.campanha == campanha)
+    )
     match = session.exec(comando).first()
-    return {"sucesso": True,
-            "id": match.id}
+    return {"sucesso": True, "id": match.id}
+
 
 def deletePersonagem(id):
     comando = select(Personagens).where(Personagens.id == id)
@@ -79,6 +94,7 @@ def deletePersonagem(id):
     session.commit()
     return {"sucesso": True}
 
+
 def updateStatus(id, status):
     comando = select(Personagens).where(Personagens.id == id)
     match = session.exec(comando).first()
@@ -87,6 +103,7 @@ def updateStatus(id, status):
         session.commit()
         return {"sucesso": True}
     return {"sucesso": False}
+
 
 def addItem(idPersonagem, idItem):
     comando = select(Personagens).where(Personagens.id == idPersonagem)
@@ -98,6 +115,7 @@ def addItem(idPersonagem, idItem):
         session.commit()
         return {"sucesso": True}
     return {"sucesso": False}
+
 
 def removeItem(idPersonagem, idItem):
     comando = select(Personagens).where(Personagens.id == idPersonagem)
