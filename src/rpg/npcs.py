@@ -7,6 +7,10 @@ import teclados
 bot = singletons.TelegramBot().bot
 
 
+def checkAbort(texto):
+    return texto.lower() in ["sair", "cancelar", "abortar"]
+
+
 def grupos():
     return getGrupos()
 
@@ -32,6 +36,9 @@ def getGrupo():
 
 
 def registrar(mensagem: Message):
+    if checkAbort(mensagem.text):
+        bot.send_message(mensagem.chat.id, "❌ Operação abortada!")
+        return
     try:
         if addNPC(mensagem.text, os.environ["Grupo"]):
             bot.send_message(mensagem.chat.id, "✅ NPC registrado")
@@ -60,6 +67,9 @@ def visualizar(mensagem: Message):
 
 
 def editar(mensagem: Message):
+    if checkAbort(mensagem.text):
+        bot.send_message(mensagem.chat.id, "❌ Operação abortada!")
+        return
     r = getNPCInfo(mensagem.text, os.environ["Grupo"])
     m = formatNPCInfo(r)
     ficha = bot.send_message(mensagem.chat.id, m, parse_mode="HTML")
@@ -92,7 +102,7 @@ def editarAtributo(
     atributo: bool = True,
 ):
     texto = mensagem.text
-    if texto.lower() == "sair":
+    if checkAbort(mensagem.text):
         if not teclado[0] == 0:
             bot.delete_message(teclado[0], teclado[1])
         bot.edit_message_text(f"✅ Edição finalizada", prompt[0], prompt[1])
@@ -138,9 +148,9 @@ def deletar(mensagem: Message):
 def deletarConfirma(mensagem: Message, p):
     if mensagem.text.lower() in ["sim", "s", "yes", "y", "👌", "👍"]:
         if deleteNPC(p, os.environ["Grupo"]):
-            bot.send_message(mensagem.chat.id, f"✅ {mensagem.text} deletado")
+            bot.send_message(mensagem.chat.id, f"✅ {p} deletado")
         else:
-            bot.send_message(mensagem.chat.id, f"❌ {mensagem.text} falha ao deletar")
+            bot.send_message(mensagem.chat.id, f"❌ {p} falha ao deletar")
     else:
         bot.send_message(mensagem.chat.id, "❌ Operação abortada!")
 
