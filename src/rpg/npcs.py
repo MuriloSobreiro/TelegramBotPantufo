@@ -2,6 +2,8 @@ import singletons
 from telebot.types import Message, ReplyKeyboardRemove
 from rpg.util import deleteNPC, getGrupos, addNPC, getNPCInfo, getNPCs, editItemNPC
 import os
+
+import imgurApi
 import teclados
 
 bot = singletons.TelegramBot().bot
@@ -102,7 +104,7 @@ def editarAtributo(
     atributo: bool = True,
 ):
     texto = mensagem.text
-    if checkAbort(mensagem.text):
+    if texto and checkAbort(mensagem.text):
         if not teclado[0] == 0:
             bot.delete_message(teclado[0], teclado[1])
         bot.edit_message_text(f"✅ Edição finalizada", prompt[0], prompt[1])
@@ -116,11 +118,26 @@ def editarAtributo(
             msg, editarAtributo, ficha, prompt, nome, (0, 0), texto, False
         )
     else:
+        if nomeAtributo in ["foto", "Foto"]:
+            nomeAtributo = "Foto"
+            if mensagem.content_type == "photo":
+                m = bot.send_message(mensagem.chat.id, "Subindo imagem para Imgur")
+                foto = bot.get_file_url(mensagem.photo[-1].file_id)
+                url = uploadImgur(foto, nomeAtributo + nome)
+                texto = url
+                if url:
+                    bot.edit_message_text(
+                        "Registro com sucesso ✅", m.chat.id, m.message_id
+                    )
+                else:
+                    bot.edit_message_text(
+                        "Falha ao salvar imagem ❌", m.chat.id, m.message_id
+                    )
         r = getNPCInfo(nome, os.environ["Grupo"])
         editItemNPC(r, nomeAtributo, texto)
         r = getNPCInfo(nome, os.environ["Grupo"])
-        m = formatNPCInfo(r)
-        bot.edit_message_text(m, ficha[0], ficha[1], parse_mode="HTML")
+        m1 = formatNPCInfo(r)
+        bot.edit_message_text(m1, ficha[0], ficha[1], parse_mode="HTML")
         bot.delete_message(mensagem.chat.id, mensagem.message_id)
         msg = bot.edit_message_text(
             "Digite o nome do atributo para editar\nOu sair para finalizar a edição",
@@ -164,3 +181,10 @@ def formatNPCInfo(info: dict) -> str:
         res = res + f"\n{k}:\n    {info[k]}"
     res = res + "\n<b>==============</b>"
     return res
+
+
+def uploadImgur(imagem, titulo, desc="") -> str:
+    r = imgurApi.subirImagem(imagem, titulo, desc)
+    if r:
+        return r
+    return ""
