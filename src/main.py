@@ -82,7 +82,7 @@ def npc(mensagem: Message):
         bot.register_next_step_handler(msg, npcs.visualizarGrupo)
 
     elif comando in ["registrar", "r"]:
-        if not npcs.getGrupo():
+        if not npcs.getGrupo(mensagem.from_user.id):
             bot.send_message(
                 mensagem.chat.id,
                 "Por favor escolha um grupo com /npc g",
@@ -93,7 +93,7 @@ def npc(mensagem: Message):
         bot.register_next_step_handler(msg, npcs.registrar)
 
     elif comando in ["editar", "e"]:
-        if not npcs.getGrupo():
+        if not npcs.getGrupo(mensagem.from_user.id):
             bot.send_message(
                 mensagem.chat.id,
                 "Por favor escolha um grupo com /npc g",
@@ -103,12 +103,12 @@ def npc(mensagem: Message):
         msg = bot.send_message(
             mensagem.chat.id,
             "Qual o Nome do NPC?",
-            reply_markup=teclados.itemTags(npcs.npcs()),
+            reply_markup=teclados.itemTags(npcs.npcs(mensagem.from_user.id)),
         )
         bot.register_next_step_handler(msg, npcs.editar)
 
     elif comando in ["deletar", "d"]:
-        if not npcs.getGrupo():
+        if not npcs.getGrupo(mensagem.from_user.id):
             bot.send_message(
                 mensagem.chat.id,
                 "Por favor escolha um grupo com /npc g",
@@ -118,7 +118,7 @@ def npc(mensagem: Message):
         msg = bot.send_message(
             mensagem.chat.id,
             "Qual NPC dejesa deletar?",
-            reply_markup=teclados.itemTags(npcs.npcs()),
+            reply_markup=teclados.itemTags(npcs.npcs(mensagem.from_user.id)),
         )
         bot.register_next_step_handler(msg, npcs.deletar)
 

@@ -1,12 +1,12 @@
 import singletons
 from telebot.types import Message, ReplyKeyboardRemove
 from rpg.util import deleteNPC, getGrupos, addNPC, getNPCInfo, getNPCs, editItemNPC
-import os
 
 import imgurApi
 import teclados
 
 bot = singletons.TelegramBot().bot
+grupo = {}
 
 
 def checkAbort(texto):
@@ -18,8 +18,8 @@ def grupos():
 
 
 def setGrupo(mensagem: Message):
-    os.environ["Grupo"] = mensagem.text
-    g = os.environ["Grupo"]
+    grupo[mensagem.from_user.id] = mensagem.text
+    g = grupo[mensagem.from_user.id]
     bot.send_message(
         mensagem.chat.id,
         f"✅ {g} selecionado",
@@ -29,9 +29,9 @@ def setGrupo(mensagem: Message):
     )
 
 
-def getGrupo():
+def getGrupo(id):
     try:
-        g = os.environ["Grupo"]
+        g = grupo[id]
         return g
     except:
         return ""
@@ -42,28 +42,30 @@ def registrar(mensagem: Message):
         bot.send_message(mensagem.chat.id, "❌ Operação abortada!")
         return
     try:
-        if addNPC(mensagem.text, os.environ["Grupo"]):
+        if addNPC(mensagem.text, grupo[mensagem.from_user.id]):
             bot.send_message(mensagem.chat.id, "✅ NPC registrado")
     except:
         bot.send_message(mensagem.chat.id, "❌ Falha ao registrar")
 
 
-def npcs():
-    return getNPCs(os.environ["Grupo"])
+def npcs(id):
+    return getNPCs(grupo[id])
 
 
 def visualizarGrupo(mensagem: Message):
-    os.environ["Grupo"] = mensagem.text
-    g = os.environ["Grupo"]
+    grupo[mensagem.from_user.id] = mensagem.text
+    g = grupo[mensagem.from_user.id]
     bot.send_message(mensagem.chat.id, f"✅ {g} selecionado")
     msg = bot.send_message(
-        mensagem.chat.id, "Qual o nome do NPC?", reply_markup=teclados.itemTags(npcs())
+        mensagem.chat.id,
+        "Qual o nome do NPC?",
+        reply_markup=teclados.itemTags(npcs(mensagem.from_user.id)),
     )
     bot.register_next_step_handler(msg, visualizar)
 
 
 def visualizar(mensagem: Message):
-    r = getNPCInfo(mensagem.text, os.environ["Grupo"])
+    r = getNPCInfo(mensagem.text, grupo[mensagem.from_user.id])
     m = formatNPCInfo(r)
     bot.send_message(mensagem.chat.id, m, parse_mode="HTML")
 
@@ -72,7 +74,7 @@ def editar(mensagem: Message):
     if checkAbort(mensagem.text):
         bot.send_message(mensagem.chat.id, "❌ Operação abortada!")
         return
-    r = getNPCInfo(mensagem.text, os.environ["Grupo"])
+    r = getNPCInfo(mensagem.text, grupo[mensagem.from_user.id])
     m = formatNPCInfo(r)
     ficha = bot.send_message(mensagem.chat.id, m, parse_mode="HTML")
     msg = bot.send_message(
@@ -133,9 +135,9 @@ def editarAtributo(
                     bot.edit_message_text(
                         "Falha ao salvar imagem ❌", m.chat.id, m.message_id
                     )
-        r = getNPCInfo(nome, os.environ["Grupo"])
+        r = getNPCInfo(nome, grupo[mensagem.from_user.id])
         editItemNPC(r, nomeAtributo, texto)
-        r = getNPCInfo(nome, os.environ["Grupo"])
+        r = getNPCInfo(nome, grupo[mensagem.from_user.id])
         m1 = formatNPCInfo(r)
         bot.edit_message_text(m1, ficha[0], ficha[1], parse_mode="HTML")
         bot.delete_message(mensagem.chat.id, mensagem.message_id)
@@ -164,7 +166,7 @@ def deletar(mensagem: Message):
 
 def deletarConfirma(mensagem: Message, p):
     if mensagem.text.lower() in ["sim", "s", "yes", "y", "👌", "👍"]:
-        if deleteNPC(p, os.environ["Grupo"]):
+        if deleteNPC(p, grupo[mensagem.from_user.id]):
             bot.send_message(mensagem.chat.id, f"✅ {p} deletado")
         else:
             bot.send_message(mensagem.chat.id, f"❌ {p} falha ao deletar")
