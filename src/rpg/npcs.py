@@ -1,6 +1,7 @@
 import singletons
 from telebot.types import Message, ReplyKeyboardRemove
 from rpg.util import deleteNPC, getGrupos, addNPC, getNPCInfo, getNPCs, editItemNPC
+from loguru import logger
 
 import imgurApi
 import teclados
@@ -20,6 +21,7 @@ def grupos():
 def setGrupo(mensagem: Message):
     grupo[mensagem.from_user.id] = mensagem.text
     g = grupo[mensagem.from_user.id]
+    logger.debug(f"Grupo selecionado: {g}")
     bot.send_message(
         mensagem.chat.id,
         f"✅ {g} selecionado",
@@ -43,8 +45,10 @@ def registrar(mensagem: Message):
         return
     try:
         if addNPC(mensagem.text, grupo[mensagem.from_user.id]):
+            logger.debug(f"NPC Registrado: {mensagem.text}")
             bot.send_message(mensagem.chat.id, "✅ NPC registrado")
     except:
+        logger.error(f"Falha ao registrar NPC")
         bot.send_message(mensagem.chat.id, "❌ Falha ao registrar")
 
 
@@ -67,6 +71,7 @@ def visualizarGrupo(mensagem: Message):
 def visualizar(mensagem: Message):
     r = getNPCInfo(mensagem.text, grupo[mensagem.from_user.id])
     m = formatNPCInfo(r)
+    logger.debug(f"Vizualizando: {mensagem.text}")
     bot.send_message(mensagem.chat.id, m, parse_mode="HTML")
 
 
@@ -76,6 +81,7 @@ def editar(mensagem: Message):
         return
     r = getNPCInfo(mensagem.text, grupo[mensagem.from_user.id])
     m = formatNPCInfo(r)
+    logger.debug(f"Editando: {mensagem.text}")
     ficha = bot.send_message(mensagem.chat.id, m, parse_mode="HTML")
     msg = bot.send_message(
         mensagem.chat.id,
@@ -113,6 +119,7 @@ def editarAtributo(
         bot.delete_message(mensagem.chat.id, mensagem.message_id)
         return
     elif atributo:
+        logger.debug(f"Editando atributo: {texto}")
         bot.delete_message(mensagem.chat.id, mensagem.message_id)
         bot.delete_message(teclado[0], teclado[1])
         msg = bot.edit_message_text(f"Qual o valor de {texto}", prompt[0], prompt[1])
@@ -161,12 +168,14 @@ def deletar(mensagem: Message):
         mensagem.chat.id,
         f"Você Tem certeza que quer deletar {mensagem.text}?\nESSA AÇÃO É IRREVERSSÍVEL",
     )
+    logger.warning(f"Deletando NPC: {mensagem.text}")
     bot.register_next_step_handler(msg, deletarConfirma, mensagem.text)
 
 
 def deletarConfirma(mensagem: Message, p):
     if mensagem.text.lower() in ["sim", "s", "yes", "y", "👌", "👍"]:
         if deleteNPC(p, grupo[mensagem.from_user.id]):
+            logger.warning(f"NPC Deletado: {mensagem.text}")
             bot.send_message(mensagem.chat.id, f"✅ {p} deletado")
         else:
             bot.send_message(mensagem.chat.id, f"❌ {p} falha ao deletar")
